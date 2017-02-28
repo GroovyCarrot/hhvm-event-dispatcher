@@ -1,0 +1,8 @@
+{
+    "roots": [
+        "./src",
+        "./tests"
+    ],
+    "extraFiles": [],
+    "includeVendor": true
+}

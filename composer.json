@@ -1,0 +1,12 @@
+{
+    "name": "groovycarrot/event-dispatcher",
+    "description": "A HHVM asynchronous event dispatcher.",
+    "require": {
+        "facebook/hhvm-autoload": "^1.3",
+        "mockery/mockery": "^0.9.8"
+    },
+    "require-dev": {
+        "hackpack/hackunit": "^1.0",
+        "phpunit/phpunit": "^5.7"
+    }
+}

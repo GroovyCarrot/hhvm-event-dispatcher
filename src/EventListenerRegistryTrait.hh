@@ -2,10 +2,8 @@
 
 namespace GroovyCarrot\Event;
 
-use GroovyCarrot\Event\Dispatch\{
-    Dispatcher,
-    TaskList
-};
+use GroovyCarrot\Event\Dispatch\Dispatcher;
+use GroovyCarrot\Event\Dispatch\TaskList;
 
 trait EventListenerRegistryTrait
 {

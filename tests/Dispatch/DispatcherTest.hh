@@ -4,8 +4,8 @@ namespace Tests\GroovyCarrot\Event\Dispatch;
 
 use GroovyCarrot\Event\EventListening;
 use GroovyCarrot\Event\Dispatch\Dispatcher;
-use GroovyCarrot\Event\Dispatch\AsynchronousTask;
-use GroovyCarrot\Event\Dispatch\SynchronousTask;
+use GroovyCarrot\Event\Dispatch\AsynchronousTaskGroup;
+use GroovyCarrot\Event\Dispatch\SynchronousTaskGroup;
 use HackPack\HackUnit\Contract\Assert;
 use PHPUnit\Framework\TestCase;
 use Mockery as m;
@@ -56,12 +56,12 @@ class DispatcherTest extends TestCase
         $eventDispatcher->tasksForEvent(OrderPlacedEvent::class)
             ->setTask(
                 OrderPlacedEvent::TASK_PROCESS_ORDER,
-                SynchronousTask::newTask()
-                    ->addSubtask($first, 0)
-                    ->addSubtask($third, 2)
-                    ->addSubtask($second, 1));
+                SynchronousTaskGroup::newGroup()
+                    ->addTask($first, 0)
+                    ->addTask($third, 2)
+                    ->addTask($second, 1));
 
-        \HH\Asio\join($eventDispatcher->dispatch($event));
+        \HH\Asio\join($eventDispatcher->dispatchEvent($event));
 
         $this->assertEquals(3, $step);
     }
@@ -86,20 +86,20 @@ class DispatcherTest extends TestCase
                 $self->assertTrue($event !== $passedEvent);
                 // Assert that we cannot stop propagation for this event as it
                 // is propagating asynchronously.
-                $self->assertTrue($passedEvent->stopPropagationIsUnsafe());
+                $self->assertTrue($passedEvent->isStoppingPropagationUnsafe());
                 $step++;
             });
 
         $eventDispatcher->tasksForEvent(OrderPlacedEvent::class)
             ->setTask(
                 OrderPlacedEvent::TASK_PROCESS_ORDER,
-                AsynchronousTask::newTask()
-                    ->addSubtask($listener)
-                    ->addSubtask($listener)
-                    ->addSubtask($listener)
+                AsynchronousTaskGroup::newGroup()
+                    ->addTask($listener)
+                    ->addTask($listener)
+                    ->addTask($listener)
             );
 
-        \HH\Asio\join($eventDispatcher->dispatch($event));
+        \HH\Asio\join($eventDispatcher->dispatchEvent($event));
 
         $this->assertEquals(3, $step);
     }

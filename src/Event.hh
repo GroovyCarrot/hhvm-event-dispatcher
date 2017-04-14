@@ -9,21 +9,21 @@ abstract class Event
     private bool $stopPropagationIsUnsafe = false;
     private bool $propagationStopped = false;
 
-    public function setStopPropagationIsUnsafe(): void
+    public function setStoppingPropagationIsUnsafe(): void
     {
         $this->stopPropagationIsUnsafe = true;
     }
 
     public function stopPropagation(): void
     {
-        if ($this->stopPropagationIsUnsafe()) {
+        if ($this->isStoppingPropagationUnsafe()) {
             throw new StopPropagationUnsafeException('Stopping event propagation is unsafe as this event is not being propagated in a synchronous task.');
         }
 
         $this->propagationStopped = true;
     }
 
-    public function stopPropagationIsUnsafe(): bool
+    public function isStoppingPropagationUnsafe(): bool
     {
         return $this->stopPropagationIsUnsafe;
     }

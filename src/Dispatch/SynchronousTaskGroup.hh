@@ -2,27 +2,25 @@
 
 namespace GroovyCarrot\Event\Dispatch;
 
-use GroovyCarrot\Event\{
-    Event,
-    EventListening,
-    EventDispatching
-};
+use GroovyCarrot\Event\Event;
+use GroovyCarrot\Event\EventListening;
+use GroovyCarrot\Event\EventDispatching;
 
-final class SynchronousTask<TEvent as Event> extends Task<TEvent>
+final class SynchronousTaskGroup<TEvent as Event> extends TaskGroup<TEvent>
 {
     private array<int, array<EventListening<TEvent>>> $listeners = [];
     private ?ImmVector<EventListening<TEvent>> $sortedListeners;
 
     private Vector<EventListening<TEvent>> $stoppedPropagationlisteners = Vector {};
 
-    public function addSubtask(EventListening<TEvent> $eventListener, int $priority = 0): this
+    public function addTask(EventListening<TEvent> $eventListener, int $priority = 0): this
     {
         $this->listeners[$priority][] = $eventListener;
         $this->sortedListeners = null;
         return $this;
     }
 
-    public function removeSubtask(EventListening<TEvent> $eventListener): void
+    public function removeTask(EventListening<TEvent> $eventListener): void
     {
         foreach ($this->listeners as $priority => $listeners) {
             if (false !== ($key = array_search($eventListener, $listeners, true))) {
@@ -31,15 +29,15 @@ final class SynchronousTask<TEvent as Event> extends Task<TEvent>
         }
     }
 
-    public function addPropagationStoppedSubtask(EventListening<TEvent> $eventListener): this
+    public function addPropagationStoppedTask(EventListening<TEvent> $eventListener): this
     {
         $this->stoppedPropagationlisteners->add($eventListener);
         return $this;
     }
 
-    public async function dispatch(TEvent $event): Awaitable<void>
+    public async function handleEvent(TEvent $event): Awaitable<void>
     {
-        foreach ($this->getSubtasks() as $listener) {
+        foreach ($this->getTasks() as $listener) {
             await $listener->handleEvent($event);
 
             if ($event->isPropagationStopped()) {
@@ -49,7 +47,7 @@ final class SynchronousTask<TEvent as Event> extends Task<TEvent>
         }
     }
 
-    public function getSubtasks(): ImmVector<EventListening<TEvent>>
+    public function getTasks(): ImmVector<EventListening<TEvent>>
     {
         if ($this->sortedListeners === null) {
             return $this->sortListeners();

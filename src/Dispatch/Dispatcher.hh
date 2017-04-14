@@ -13,7 +13,7 @@ class Dispatcher implements EventDispatching, EventListenerTaskCollecting
 {
     use EventListenerRegistryTrait;
 
-    public async function dispatch<TEvent as Event>(TEvent $event): Awaitable<Map<string, TEvent>>
+    public async function dispatchEvent<TEvent as Event>(TEvent $event): Awaitable<Map<string, TEvent>>
     {
         $eventClass = new \ReflectionClass($event);
         $className = $eventClass->getName();
@@ -22,24 +22,28 @@ class Dispatcher implements EventDispatching, EventListenerTaskCollecting
             throw new \InvalidArgumentException("No dispatch tasks exist for event {$className}.");
         }
 
-        $tasks = Map {};
+        $taskEvents = Map {};
         $dispatch = [];
         foreach ($this->taskLists->at($className)->getTasks() as $taskName => $task) {
             // We clone the event, so that each task can stop propagation
             // independently if it is synchronous.
             $eventCopy = clone $event;
-            $tasks->set($taskName, $eventCopy);
-            $dispatch[] = $task->dispatch($eventCopy);
+            $taskEvents->set($taskName, $eventCopy);
+            $dispatch[] = $task->handleEvent($eventCopy);
         }
 
         await \HH\Asio\m($dispatch);
 
-        return $tasks;
+        return $taskEvents;
     }
 
-    public async function dispatchForTask<TEvent as Event>(TEvent $event, string $taskName): Awaitable<TEvent>
+    public async function dispatchEventForTask<TEvent as Event>(TEvent $event, string $taskName): Awaitable<TEvent>
     {
-        $results = await $this->dispatch($event);
+        $results = await $this->dispatchEvent($event);
+        if (!$results->contains($taskName)) {
+            throw new \InvalidArgumentException("Result for task '{$taskName}' not found.");
+        }
+
         return $results->at($taskName);
     }
 }

@@ -3,26 +3,28 @@
 namespace GroovyCarrot\Event\Dispatch;
 
 use GroovyCarrot\Event\Event;
+use GroovyCarrot\Event\EventListening;
 
 final class TaskList<TEvent as Event>
 {
-    private Map<string, Task<TEvent>> $tasks = Map {};
+    private Map<string, EventListening<TEvent>> $tasks = Map {};
 
-    public function setTask(string $taskName, Task<TEvent> $task): void
+    public function setTask(string $taskName, EventListening<TEvent> $task): this
     {
         $this->tasks->set($taskName, $task);
+        return $this;
     }
 
-    public function getTask(string $taskName): Task<TEvent>
+    public function getTask(string $taskName): EventListening<TEvent>
     {
         if (!$this->tasks->contains($taskName)) {
-            throw new \InvalidArgumentException("Queue '{$taskName}' does not exist.");
+            throw new \InvalidArgumentException("Task '{$taskName}' does not exist.");
         }
 
         return $this->tasks->at($taskName);
     }
 
-    public function getTasks(): ImmMap<string, Task<TEvent>>
+    public function getTasks(): ImmMap<string, EventListening<TEvent>>
     {
         return $this->tasks->toImmMap();
     }

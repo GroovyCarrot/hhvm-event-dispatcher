@@ -2,22 +2,20 @@
 
 namespace GroovyCarrot\Event\Dispatch;
 
-use GroovyCarrot\Event\{
-    Event,
-    EventListening
-};
+use GroovyCarrot\Event\Event;
+use GroovyCarrot\Event\EventListening;
 
-final class AsynchronousTask<TEvent as Event> extends Task<TEvent>
+final class AsynchronousTaskGroup<TEvent as Event> extends TaskGroup<TEvent>
 {
     private Vector<EventListening<TEvent>> $listeners = Vector {};
 
-    public function addSubtask(EventListening<TEvent> $eventListener): this
+    public function addTask(EventListening<TEvent> $eventListener): this
     {
         $this->listeners[] = $eventListener;
         return $this;
     }
 
-    public function removeSubtask(EventListening<TEvent> $eventListener): void
+    public function removeTask(EventListening<TEvent> $eventListener): void
     {
         $listenerKey = null;
         foreach ($this->listeners as $key => $listener) {
@@ -34,17 +32,17 @@ final class AsynchronousTask<TEvent as Event> extends Task<TEvent>
         $this->listeners->removeKey($listenerKey);
     }
 
-    public function getSubtasks(): ImmVector<EventListening<TEvent>>
+    public function getTasks(): ImmVector<EventListening<TEvent>>
     {
         return $this->listeners->immutable();
     }
 
-    public async function dispatch(TEvent $event): Awaitable<void>
+    public async function handleEvent(TEvent $event): Awaitable<void>
     {
-        $event->setStopPropagationIsUnsafe();
+        $event->setStoppingPropagationIsUnsafe();
 
         $dispatch = [];
-        foreach ($this->getSubtasks() as $listener) {
+        foreach ($this->getTasks() as $listener) {
             $dispatch[] = $listener->handleEvent($event);
         }
 

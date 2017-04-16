@@ -2,7 +2,7 @@
 
 namespace GroovyCarrot\Event;
 
-interface EventListening<Tevent as Event>
+interface EventHandling<Tevent as Event>
 {
     public function handleEvent(Tevent $event): Awaitable<void>;
 }

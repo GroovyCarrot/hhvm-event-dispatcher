@@ -9,10 +9,10 @@ interface EventDispatching
     /**
      * Dispatch an event, and return a map of tasks and their finished events.
      */
-    public function dispatchEvent<TEvent as Event>(TEvent $event): Awaitable<Map<string, TEvent>>;
+    public function dispatchEvent<Tevent as Event>(Tevent $event): Awaitable<Map<string, Tevent>>;
 
     /**
      * Dispatch an event, and return the finished event for a particular task.
      */
-    public function dispatchEventForTask<TEvent as Event>(TEvent $event, string $taskName): Awaitable<TEvent>;
+    public function dispatchEventForTask<Tevent as Event>(Tevent $event, string $taskName): Awaitable<Tevent>;
 }

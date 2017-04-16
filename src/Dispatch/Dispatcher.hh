@@ -2,31 +2,28 @@
 
 namespace GroovyCarrot\Event\Dispatch;
 
-use GroovyCarrot\Event\{
-    Event,
-    EventDispatching,
-    EventListenerTaskCollecting,
-    EventListenerRegistryTrait
-};
+use GroovyCarrot\Event\Event;
+use GroovyCarrot\Event\EventDispatching;
+use GroovyCarrot\Event\EventListenerTaskCollecting;
+use GroovyCarrot\Event\EventListenerRegistryTrait;
 
 class Dispatcher implements EventDispatching, EventListenerTaskCollecting
 {
     use EventListenerRegistryTrait;
 
-    public async function dispatchEvent<TEvent as Event>(TEvent $event): Awaitable<Map<string, TEvent>>
+    public async function dispatchEvent<Tevent as Event>(Tevent $event): Awaitable<Map<string, Tevent>>
     {
-        $eventClass = new \ReflectionClass($event);
-        $className = $eventClass->getName();
+        $eventClass = get_class($event);
 
-        if (!array_key_exists($className, $this->taskLists)) {
-            throw new \InvalidArgumentException("No dispatch tasks exist for event {$className}.");
+        $tasks = $this->tasksForEvent($eventClass)->getTasks();
+        if ($tasks->isEmpty()) {
+            throw new \InvalidArgumentException("No dispatch tasks exist for event {$eventClass}.");
         }
 
         $taskEvents = Map {};
         $dispatch = [];
-        foreach ($this->taskLists->at($className)->getTasks() as $taskName => $task) {
-            // We clone the event, so that each task can stop propagation
-            // independently if it is synchronous.
+        foreach ($tasks as $taskName => $task) {
+            // We clone the event, so that each task can stop propagation independently if it is synchronous.
             $eventCopy = clone $event;
             $taskEvents->set($taskName, $eventCopy);
             $dispatch[] = $task->handleEvent($eventCopy);
@@ -37,7 +34,7 @@ class Dispatcher implements EventDispatching, EventListenerTaskCollecting
         return $taskEvents;
     }
 
-    public async function dispatchEventForTask<TEvent as Event>(TEvent $event, string $taskName): Awaitable<TEvent>
+    public async function dispatchEventForTask<Tevent as Event>(Tevent $event, string $taskName): Awaitable<Tevent>
     {
         $results = await $this->dispatchEvent($event);
         if (!$results->contains($taskName)) {

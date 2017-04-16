@@ -3,19 +3,19 @@
 namespace GroovyCarrot\Event\Dispatch;
 
 use GroovyCarrot\Event\Event;
-use GroovyCarrot\Event\EventListening;
+use GroovyCarrot\Event\EventHandling;
 
-final class TaskList<TEvent as Event>
+final class TaskList<Tevent as Event>
 {
-    private Map<string, EventListening<TEvent>> $tasks = Map {};
+    private Map<string, EventHandling<Tevent>> $tasks = Map {};
 
-    public function setTask(string $taskName, EventListening<TEvent> $task): this
+    public function setTask(string $taskName, EventHandling<Tevent> $task): this
     {
         $this->tasks->set($taskName, $task);
         return $this;
     }
 
-    public function getTask(string $taskName): EventListening<TEvent>
+    public function getTask(string $taskName): EventHandling<Tevent>
     {
         if (!$this->tasks->contains($taskName)) {
             throw new \InvalidArgumentException("Task '{$taskName}' does not exist.");
@@ -24,7 +24,7 @@ final class TaskList<TEvent as Event>
         return $this->tasks->at($taskName);
     }
 
-    public function getTasks(): ImmMap<string, EventListening<TEvent>>
+    public function getTasks(): ImmMap<string, EventHandling<Tevent>>
     {
         return $this->tasks->toImmMap();
     }

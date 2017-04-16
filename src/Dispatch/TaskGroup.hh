@@ -3,19 +3,19 @@
 namespace GroovyCarrot\Event\Dispatch;
 
 use GroovyCarrot\Event\Event;
-use GroovyCarrot\Event\EventListening;
+use GroovyCarrot\Event\EventHandling;
 
 <<__ConsistentConstruct>>
-abstract class TaskGroup<TEvent as Event> implements EventListening<TEvent>
+abstract class TaskGroup<Tevent as Event> implements EventHandling<Tevent>
 {
     public static function newGroup(): this
     {
         return new static();
     }
 
-    abstract public function addTask(EventListening<TEvent> $eventListener): this;
+    abstract public function addTask(EventHandling<Tevent> $eventListener): this;
 
-    abstract public function removeTask(EventListening<TEvent> $eventListener): void;
+    abstract public function removeTask(EventHandling<Tevent> $eventListener): this;
 
-    abstract public function getTasks(): ImmVector<EventListening<TEvent>>;
+    abstract public function getTasks(): ImmVector<EventHandling<Tevent>>;
 }

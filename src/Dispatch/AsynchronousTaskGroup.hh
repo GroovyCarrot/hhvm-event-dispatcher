@@ -3,19 +3,19 @@
 namespace GroovyCarrot\Event\Dispatch;
 
 use GroovyCarrot\Event\Event;
-use GroovyCarrot\Event\EventListening;
+use GroovyCarrot\Event\EventHandling;
 
-final class AsynchronousTaskGroup<TEvent as Event> extends TaskGroup<TEvent>
+final class AsynchronousTaskGroup<Tevent as Event> extends TaskGroup<Tevent>
 {
-    private Vector<EventListening<TEvent>> $listeners = Vector {};
+    private Vector<EventHandling<Tevent>> $listeners = Vector {};
 
-    public function addTask(EventListening<TEvent> $eventListener): this
+    public function addTask(EventHandling<Tevent> $eventListener): this
     {
-        $this->listeners[] = $eventListener;
+        $this->listeners->add($eventListener);
         return $this;
     }
 
-    public function removeTask(EventListening<TEvent> $eventListener): void
+    public function removeTask(EventHandling<Tevent> $eventListener): this
     {
         $listenerKey = null;
         foreach ($this->listeners as $key => $listener) {
@@ -26,18 +26,19 @@ final class AsynchronousTaskGroup<TEvent as Event> extends TaskGroup<TEvent>
         }
 
         if ($listenerKey === null) {
-            return;
+            throw new \InvalidArgumentException('Task not found in group.');
         }
 
         $this->listeners->removeKey($listenerKey);
+        return $this;
     }
 
-    public function getTasks(): ImmVector<EventListening<TEvent>>
+    public function getTasks(): ImmVector<EventHandling<Tevent>>
     {
         return $this->listeners->immutable();
     }
 
-    public async function handleEvent(TEvent $event): Awaitable<void>
+    public async function handleEvent(Tevent $event): Awaitable<void>
     {
         $event->setStoppingPropagationIsUnsafe();
 

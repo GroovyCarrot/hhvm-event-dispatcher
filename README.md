@@ -1,13 +1,14 @@
 # HHVM asynchronous event dispatcher
 
 ### Usage
-
-A simple example of adding a product to a basket.
-
+A simple example of adding a product to a basket: when a product is added to a basket, a couple of things need
+to happen; the first task is to add it to the basket itself stored in the current session. The other task is to
+inform the warehouse to reserve the stock, to ensure the order can be placed later on. These responsibilities
+should be separate in the design of an object-oriented application, which is where events come in.
 ```hack
 $eventDispatcher = new Dispatcher();
 
-// Tasks must implement the interface EventListening<AddProductToBasketEvent>.
+// Tasks must implement the interface EventHandling<AddProductToBasketEvent>.
 $eventDispatcher->tasksForEvent(AddProductToBasketEvent::class)
     ->setTask('add_to_basket', new AddProductToBasketTask($session->getBasket()))
     ->setTask('reserve_stock', new WarehouseReserveStockTask());
@@ -16,6 +17,10 @@ $product = new TShirt();
 
 $events = await $eventDispatcher->dispatchEvent(new AddProductToBasketEvent($product));
 ```
+Both tasks `add_to_basket` and `reserve_stock` are called
+[asynchronously](https://docs.hhvm.com/hack/async/introduction), and each task receives a different copy of
+the event. To inspect the event for each task `dispatchEvent()` returns a
+`Map<string, AddProductToBasketEvent>`.
 ```
 class HH\Map (2) {
   public $add_to_basket =>
@@ -31,7 +36,7 @@ class HH\Map (2) {
 }
 ```
 
-A more complex example of placing the order.
+A more complex example of placing an order.
 
 ```hack
 $eventDispatcher->tasksForEvent(PlaceOrderEvent::class)
@@ -39,6 +44,7 @@ $eventDispatcher->tasksForEvent(PlaceOrderEvent::class)
         'process_order',
         // Synchronous task groups will propagate the event to the subtasks in order. Event propagation can
         // be stopped by any of the subtasks, which then triggers the propagation-stopped tasks instead.
+        // None of these tasks will prevent other tasks outside of this group from running however.
         SynchronousTaskGroup::newGroup()
             ->addTask(new ProcessPaymentTask(), 0)
             ->addTask(new WarehouseDispatchTask(), 1)
@@ -68,7 +74,6 @@ if ($finishedEvent->isPropagationStopped()) {
 ```
 
 ### Running tests
-
 ```hack
 hhvm vendor/bin/phpunit --bootstrap vendor/hh_autoload.php
 ```

@@ -3,39 +3,57 @@
 namespace GroovyCarrot\Event\Dispatch;
 
 use GroovyCarrot\Event\Event;
-use GroovyCarrot\Event\EventListening;
+use GroovyCarrot\Event\EventHandling;
 use GroovyCarrot\Event\EventDispatching;
 
-final class SynchronousTaskGroup<TEvent as Event> extends TaskGroup<TEvent>
+final class SynchronousTaskGroup<Tevent as Event> extends TaskGroup<Tevent>
 {
-    private array<int, array<EventListening<TEvent>>> $listeners = [];
-    private ?ImmVector<EventListening<TEvent>> $sortedListeners;
+    private array<int, array<EventHandling<Tevent>>> $listeners = [];
+    private ?ImmVector<EventHandling<Tevent>> $sortedListeners;
 
-    private Vector<EventListening<TEvent>> $stoppedPropagationlisteners = Vector {};
+    private Vector<EventHandling<Tevent>> $stoppedPropagationlisteners = Vector {};
 
-    public function addTask(EventListening<TEvent> $eventListener, int $priority = 0): this
+    public function addTask(EventHandling<Tevent> $eventListener, int $priority = 0): this
     {
         $this->listeners[$priority][] = $eventListener;
         $this->sortedListeners = null;
         return $this;
     }
 
-    public function removeTask(EventListening<TEvent> $eventListener): void
+    public function removeTask(EventHandling<Tevent> $eventListener): this
     {
+        $found = false;
+
         foreach ($this->listeners as $priority => $listeners) {
             if (false !== ($key = array_search($eventListener, $listeners, true))) {
                 unset($listeners[$key]);
+                $found = true;
             }
         }
+
+        if (!$found) {
+            throw new \InvalidArgumentException('Task not found in group.');
+        }
+
+        return $this;
     }
 
-    public function addPropagationStoppedTask(EventListening<TEvent> $eventListener): this
+    public function addPropagationStoppedTask(EventHandling<Tevent> $eventListener): this
     {
         $this->stoppedPropagationlisteners->add($eventListener);
         return $this;
     }
 
-    public async function handleEvent(TEvent $event): Awaitable<void>
+    public function getTasks(): ImmVector<EventHandling<Tevent>>
+    {
+        if ($this->sortedListeners === null) {
+            return $this->sortListeners();
+        }
+
+        return $this->sortedListeners;
+    }
+
+    public async function handleEvent(Tevent $event): Awaitable<void>
     {
         foreach ($this->getTasks() as $listener) {
             await $listener->handleEvent($event);
@@ -47,16 +65,7 @@ final class SynchronousTaskGroup<TEvent as Event> extends TaskGroup<TEvent>
         }
     }
 
-    public function getTasks(): ImmVector<EventListening<TEvent>>
-    {
-        if ($this->sortedListeners === null) {
-            return $this->sortListeners();
-        }
-
-        return $this->sortedListeners;
-    }
-
-    private async function propagationStopped(TEvent $event): Awaitable<void>
+    private async function propagationStopped(Tevent $event): Awaitable<void>
     {
         $dispatch = [];
         foreach ($this->stoppedPropagationlisteners as $listener) {
@@ -66,7 +75,7 @@ final class SynchronousTaskGroup<TEvent as Event> extends TaskGroup<TEvent>
         await \HH\Asio\m($dispatch);
     }
 
-    private function sortListeners(): ImmVector<EventListening<TEvent>>
+    private function sortListeners(): ImmVector<EventHandling<Tevent>>
     {
         ksort($this->listeners, SORT_NUMERIC);
 

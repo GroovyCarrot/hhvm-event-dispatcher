@@ -6,5 +6,5 @@ use GroovyCarrot\Event\Dispatch\TaskList;
 
 interface EventListenerTaskCollecting
 {
-    public function tasksForEvent<TEvent as Event>(classname<TEvent> $eventClass): TaskList<TEvent>;
+    public function tasksForEvent<Tevent as Event>(classname<Tevent> $eventClass): TaskList<Tevent>;
 }

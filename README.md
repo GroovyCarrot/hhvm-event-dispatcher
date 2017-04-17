@@ -75,5 +75,5 @@ if ($finishedEvent->isPropagationStopped()) {
 
 ### Running tests
 ```hack
-hhvm vendor/bin/phpunit --bootstrap vendor/hh_autoload.php
+hhvm vendor/bin/phpunit
 ```

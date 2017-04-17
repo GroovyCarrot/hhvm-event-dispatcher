@@ -19,7 +19,7 @@ abstract class TaskGroupSpec extends TestCase
     /**
      * @test
      */
-    public function is_should_collect_tasks_and_remove_them(): void
+    public function it_collects_tasks_and_remove_them(): void
     {
         $task = m::mock(EventHandling::class);
 

@@ -18,7 +18,7 @@ class AsynchronousTaskGroupSpec extends TaskGroupSpec
     /**
      * @test
      */
-    public function it_should_propagate_an_event_to_tasks_asynchronously(): void
+    public function it_propagates_an_event_to_tasks_asynchronously(): void
     {
         $self = $this;
 

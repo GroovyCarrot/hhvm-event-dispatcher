@@ -1,4 +1,4 @@
-<?hh
+<?hh // partial
 
 namespace Tests\GroovyCarrot\Event\Dispatch;
 

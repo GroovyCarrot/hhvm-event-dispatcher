@@ -11,7 +11,7 @@ final class SynchronousTaskGroup<Tevent as Event> extends TaskGroup<Tevent>
     private array<int, array<EventHandling<Tevent>>> $listeners = [];
     private ?ImmVector<EventHandling<Tevent>> $sortedListeners;
 
-    private Vector<EventHandling<Tevent>> $stoppedPropagationlisteners = Vector {};
+    private Vector<EventHandling<Tevent>> $stoppedPropagationlisteners = Vector{};
 
     public function addTask(EventHandling<Tevent> $eventListener, int $priority = 0): this
     {
@@ -26,7 +26,7 @@ final class SynchronousTaskGroup<Tevent as Event> extends TaskGroup<Tevent>
 
         foreach ($this->listeners as $priority => $listeners) {
             if (false !== ($key = array_search($eventListener, $listeners, true))) {
-                unset($listeners[$key]);
+                unset($this->listeners[$priority][$key]);
                 $found = true;
             }
         }
@@ -35,6 +35,7 @@ final class SynchronousTaskGroup<Tevent as Event> extends TaskGroup<Tevent>
             throw new \InvalidArgumentException('Task not found in group.');
         }
 
+        $this->sortedListeners = null;
         return $this;
     }
 
@@ -79,7 +80,7 @@ final class SynchronousTaskGroup<Tevent as Event> extends TaskGroup<Tevent>
     {
         ksort($this->listeners, SORT_NUMERIC);
 
-        $sortedListeners = Vector {};
+        $sortedListeners = Vector{};
         foreach ($this->listeners as $priority => $eventListeners) {
             $sortedListeners->addAll($eventListeners);
         }

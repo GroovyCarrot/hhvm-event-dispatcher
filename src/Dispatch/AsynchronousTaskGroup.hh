@@ -7,7 +7,7 @@ use GroovyCarrot\Event\EventHandling;
 
 final class AsynchronousTaskGroup<Tevent as Event> extends TaskGroup<Tevent>
 {
-    private Vector<EventHandling<Tevent>> $listeners = Vector {};
+    private Vector<EventHandling<Tevent>> $listeners = Vector{};
 
     public function addTask(EventHandling<Tevent> $eventListener): this
     {

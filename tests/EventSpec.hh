@@ -2,6 +2,7 @@
 
 namespace Test\GroovyCarrot\Event;
 
+use GroovyCarrot\Event\Exception\StopPropagationUnsafeException;
 use PHPUnit\Framework\TestCase;
 
 class EventSpec extends TestCase
@@ -28,5 +29,19 @@ class EventSpec extends TestCase
         $event->stopPropagation();
 
         $this->assertTrue($event->isPropagationStopped());
+    }
+
+    /**
+     * @test
+     */
+    public function it_should_know_thrown_an_exception_if_event_propagation_is_unsafe(): void
+    {
+        $event = new EventStub();
+
+        $event->setStoppingPropagationIsUnsafe();
+
+        $this->expectException(StopPropagationUnsafeException::class);
+
+        $event->stopPropagation();
     }
 }

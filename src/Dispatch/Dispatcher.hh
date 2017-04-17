@@ -20,7 +20,7 @@ class Dispatcher implements EventDispatching, EventListenerTaskCollecting
             throw new \InvalidArgumentException("No dispatch tasks exist for event {$eventClass}.");
         }
 
-        $taskEvents = Map {};
+        $taskEvents = Map{};
         $dispatch = [];
         foreach ($tasks as $taskName => $task) {
             // We clone the event, so that each task can stop propagation independently if it is synchronous.

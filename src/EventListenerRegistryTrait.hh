@@ -7,8 +7,8 @@ use GroovyCarrot\Event\Dispatch\TaskList;
 
 trait EventListenerRegistryTrait
 {
-    private Map<string, TaskList<Event>> $taskLists = Map {};
-    private Map<string, Vector<(function(TaskList<Event>): void)>> $taskListProvisioners = Map {};
+    private Map<string, TaskList<Event>> $taskLists = Map{};
+    private Map<string, Vector<(function(TaskList<Event>): void)>> $taskListProvisioners = Map{};
 
     public function addTaskProvisioner<Tevent as Event>(
         classname<Tevent> $eventClass,
@@ -16,7 +16,7 @@ trait EventListenerRegistryTrait
     ): void
     {
         if (!$this->taskListProvisioners->contains($eventClass)) {
-            $this->taskListProvisioners->set($eventClass, Vector {});
+            $this->taskListProvisioners->set($eventClass, Vector{});
         }
 
         /* HH_FIXME[4110] the type checker will enforce the type to the user when they call the function. */

@@ -7,7 +7,7 @@ use GroovyCarrot\Event\EventHandling;
 
 final class TaskList<Tevent as Event>
 {
-    private Map<string, EventHandling<Tevent>> $tasks = Map {};
+    private Map<string, EventHandling<Tevent>> $tasks = Map{};
 
     public function setTask(string $taskName, EventHandling<Tevent> $task): this
     {

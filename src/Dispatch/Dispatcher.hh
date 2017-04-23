@@ -4,14 +4,51 @@ namespace GroovyCarrot\Event\Dispatch;
 
 use GroovyCarrot\Event\Event;
 use GroovyCarrot\Event\EventDispatching;
-use GroovyCarrot\Event\EventListenerTaskCollecting;
-use GroovyCarrot\Event\EventListenerRegistryTrait;
+use GroovyCarrot\Event\EventHandlerTaskCollecting;
+use GroovyCarrot\Event\EventHandlerRegistryTrait;
 
-class Dispatcher implements EventDispatching, EventListenerTaskCollecting
+class Dispatcher implements EventDispatching, EventHandlerTaskCollecting
 {
-    use EventListenerRegistryTrait;
+    use EventHandlerRegistryTrait;
+
+    private Vector<Awaitable<void>> $pendingAwaitables = Vector{};
 
     public async function dispatchEvent<Tevent as Event>(Tevent $event): Awaitable<Map<string, Tevent>>
+    {
+        $taskEvents = Map{};
+        $awaitables = $this->getDispatchAwaitables($event, $taskEvents);
+
+        await \HH\Asio\m($awaitables);
+
+        return $taskEvents;
+    }
+
+    public async function dispatchEventForTask<Tevent as Event>(Tevent $event, string $taskName): Awaitable<Tevent>
+    {
+        $taskEvents = Map{};
+
+        $awaitables = $this->getDispatchAwaitables($event, $taskEvents);
+        if (!$awaitables->contains($taskName)) {
+            $eventClass = get_class($event);
+            throw new \InvalidArgumentException("Task '{$taskName}' not found for {$eventClass}.");
+        }
+
+        $this->pendingAwaitables->addAll($awaitables);
+        await $awaitables->at($taskName);
+
+        return $taskEvents->at($taskName);
+    }
+
+    public async function flush(): Awaitable<void>
+    {
+        await \HH\Asio\m($this->pendingAwaitables);
+        $this->pendingAwaitables->clear();
+    }
+
+    private function getDispatchAwaitables<Tevent as Event>(
+        Tevent $event,
+        Map<string, Tevent> $taskEvents
+    ): Map<string, Awaitable<void>>
     {
         $eventClass = get_class($event);
 
@@ -20,27 +57,22 @@ class Dispatcher implements EventDispatching, EventListenerTaskCollecting
             throw new \InvalidArgumentException("No dispatch tasks exist for event {$eventClass}.");
         }
 
-        $taskEvents = Map{};
-        $dispatch = [];
+        $dispatch = Map{};
         foreach ($tasks as $taskName => $task) {
             // We clone the event, so that each task can stop propagation independently if it is synchronous.
             $eventCopy = clone $event;
             $taskEvents->set($taskName, $eventCopy);
-            $dispatch[] = $task->handleEvent($eventCopy);
+            $dispatch->set($taskName, $task->handleEvent($eventCopy));
         }
 
-        await \HH\Asio\m($dispatch);
-
-        return $taskEvents;
+        return $dispatch;
     }
 
-    public async function dispatchEventForTask<Tevent as Event>(Tevent $event, string $taskName): Awaitable<Tevent>
+    /**
+     * Ensure that any outstanding tasks are complete before the application finishes.
+     */
+    public function __destruct(): void
     {
-        $results = await $this->dispatchEvent($event);
-        if (!$results->contains($taskName)) {
-            throw new \InvalidArgumentException("Result for task '{$taskName}' not found.");
-        }
-
-        return $results->at($taskName);
+        \HH\Asio\join($this->flush());
     }
 }

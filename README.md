@@ -71,6 +71,11 @@ if ($finishedEvent->isPropagationStopped()) {
 } else {
     print "Order successful!";
 }
+
+// We need to finish any outstanding tasks that were not awaited. This happens automatically when the
+// dispatcher is destroyed, however can be triggered manually if the application terminates a
+// significant amount of time after these operations.
+await $eventDispatcher->flush();
 ```
 
 ### Running tests

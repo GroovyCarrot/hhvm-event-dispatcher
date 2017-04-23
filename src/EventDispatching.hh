@@ -15,4 +15,9 @@ interface EventDispatching
      * Dispatch an event, and return the finished event for a particular task.
      */
     public function dispatchEventForTask<Tevent as Event>(Tevent $event, string $taskName): Awaitable<Tevent>;
+
+    /**
+     * Finish any unawaited tasks.
+     */
+    public function flush(): Awaitable<void>;
 }

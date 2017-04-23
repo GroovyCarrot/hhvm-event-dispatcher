@@ -4,14 +4,7 @@ namespace GroovyCarrot\Event\Dispatch;
 
 use GroovyCarrot\Event\Event;
 use GroovyCarrot\Event\EventHandling;
-
-// @todo remove this when this is a part of HHVM.
-use HH\KeyedTraversable;
-use HH\KeyedIterator;
-interface KeyedIteratorAggregate<+Tk, +Tv> extends KeyedTraversable<Tk, Tv>, \IteratorAggregate<Tv>
-{
-    public function getIterator(): KeyedIterator<Tk, Tv>;
-}
+use GroovyCarrot\Event\Util\KeyedIteratorAggregate;
 
 final class TaskList<Tevent as Event> implements KeyedIteratorAggregate<string, EventHandling<Tevent>>
 {

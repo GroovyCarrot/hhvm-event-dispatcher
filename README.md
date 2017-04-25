@@ -55,8 +55,8 @@ $eventDispatcher->tasksForEvent(PlaceOrderEvent::class)
         // Asynchronous task groups will propagate the event to the subtasks at the same time. Each subtasks
         // can modify the event, however stopping propagation is not allowed as it will be unsafe.
         AsynchronousTaskGroup::newGroup()
-            ->addSubtask(new LogToDatabaseTask())
-            ->addSubtask(new LogToFilesystemTask()));
+            ->addTask(new LogToDatabaseTask())
+            ->addTask(new LogToFilesystemTask()));
 
 $order = new Order($session->getCustomer(), $session->getBasket());
 $event = new PlaceOrderEvent($order);

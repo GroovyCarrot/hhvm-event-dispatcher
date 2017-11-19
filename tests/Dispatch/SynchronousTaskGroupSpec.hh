@@ -30,8 +30,7 @@ class SynchronousTaskGroupSpec extends TaskGroupSpec
         $first->shouldReceive('handleEvent')
             ->times(1)
             ->andReturnUsing(
-                async function (OrderPlacedEvent $passedEvent): Awaitable<void> use ($self, $event, &$step)
-                {
+                async function (OrderPlacedEvent $passedEvent): Awaitable<void> use ($self, $event, &$step) {
                     $this->assertEquals($event, $passedEvent);
                     $this->assertEquals($event->order, $passedEvent->order);
                     // Create a delay, if this task was asynchronous then the other
@@ -46,8 +45,7 @@ class SynchronousTaskGroupSpec extends TaskGroupSpec
         $second->shouldReceive('handleEvent')
             ->times(1)
             ->andReturnUsing(
-                async function (OrderPlacedEvent $passedEvent): Awaitable<void> use ($self, $event, &$step)
-                {
+                async function (OrderPlacedEvent $passedEvent): Awaitable<void> use ($self, $event, &$step) {
                     $this->assertEquals($event, $passedEvent);
                     $this->assertEquals($event->order, $passedEvent->order);
                     $self->assertEquals(1, $step);
@@ -59,8 +57,7 @@ class SynchronousTaskGroupSpec extends TaskGroupSpec
         $third->shouldReceive('handleEvent')
             ->times(1)
             ->andReturnUsing(
-                async function (OrderPlacedEvent $passedEvent): Awaitable<void> use ($self, $event, &$step)
-                {
+                async function (OrderPlacedEvent $passedEvent): Awaitable<void> use ($self, $event, &$step) {
                     $this->assertEquals($event, $passedEvent);
                     $this->assertEquals($event->order, $passedEvent->order);
                     $self->assertEquals(2, $step);

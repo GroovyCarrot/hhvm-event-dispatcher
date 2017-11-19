@@ -6,6 +6,6 @@ class Order
 {
     public function __construct(
         public Vector<string> $items,
-    )
-    {}
+    ) {
+    }
 }

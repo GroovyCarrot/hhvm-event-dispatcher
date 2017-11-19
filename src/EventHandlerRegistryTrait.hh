@@ -10,13 +10,12 @@ trait EventHandlerRegistryTrait
     require implements EventHandlerTaskCollecting;
 
     private Map<string, TaskList<Event>> $taskLists = Map{};
-    private Map<string, Vector<(function(TaskList<Event>): void)>> $taskListProvisioners = Map{};
+    private Map<string, Vector<(function (TaskList<Event>): void)>> $taskListProvisioners = Map{};
 
     public function addTaskProvisioner<Tevent as Event>(
         classname<Tevent> $eventClass,
-        (function(TaskList<Tevent>): void) $lambda
-    ): void
-    {
+        (function (TaskList<Tevent>): void) $lambda
+    ): void {
         if (!$this->taskListProvisioners->contains($eventClass)) {
             $this->verifyEventClass($eventClass);
             $this->taskListProvisioners->set($eventClass, Vector{});

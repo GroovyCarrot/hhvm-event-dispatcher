@@ -45,8 +45,7 @@ class DispatcherSpec extends TestCase
 
         $dispatcher->addTaskProvisioner(
             OrderPlacedEvent::class,
-            function (TaskList $taskList) use ($expectedTaskName, &$expectedTask)
-            {
+            function (TaskList $taskList) use ($expectedTaskName, &$expectedTask) {
                 $expectedTask = m::mock(EventHandling::class);
                 $taskList->setTask($expectedTaskName, $expectedTask);
             }
@@ -72,10 +71,11 @@ class DispatcherSpec extends TestCase
 
         $eventHandler->shouldReceive('handleEvent')
             ->once()
-            ->andReturnUsing(async function (OrderPlacedEvent $passedEvent): Awaitable<void> use ($event)
-            {
-                $this->assertEquals($event, $passedEvent);
-            });
+            ->andReturnUsing(
+                async function (OrderPlacedEvent $passedEvent): Awaitable<void> use ($event) {
+                    $this->assertEquals($event, $passedEvent);
+                }
+            );
 
         $dispatcher->tasksForEvent(OrderPlacedEvent::class)
             ->setTask('test', $eventHandler);
@@ -99,21 +99,22 @@ class DispatcherSpec extends TestCase
 
         $eventHandler1->shouldReceive('handleEvent')
             ->once()
-            ->andReturnUsing(async function (OrderPlacedEvent $passedEvent): Awaitable<void> use ($event)
-            {
-                $this->assertEquals($event, $passedEvent);
-            });
+            ->andReturnUsing(
+                async function (OrderPlacedEvent $passedEvent): Awaitable<void> use ($event) {
+                    $this->assertEquals($event, $passedEvent);
+                }
+            );
 
         $eventHandler2->shouldReceive('handleEvent')
             ->once()
-            ->andReturnUsing(async function (OrderPlacedEvent $passedEvent): Awaitable<void>
-            use ($event, &$step2Finished)
-            {
-                $this->assertEquals($event, $passedEvent);
-                // Reason to not finish executing immediately.
-                await \HH\Asio\usleep(1);
-                $step2Finished = true;
-            });
+            ->andReturnUsing(
+                async function (OrderPlacedEvent $passedEvent): Awaitable<void> use ($event, &$step2Finished) {
+                    $this->assertEquals($event, $passedEvent);
+                    // Reason to not finish executing immediately.
+                    await \HH\Asio\usleep(1);
+                    $step2Finished = true;
+                }
+            );
 
         $dispatcher->tasksForEvent(OrderPlacedEvent::class)
             ->setTask('first', $eventHandler1)
@@ -144,21 +145,22 @@ class DispatcherSpec extends TestCase
 
         $eventHandler1->shouldReceive('handleEvent')
             ->once()
-            ->andReturnUsing(async function (OrderPlacedEvent $passedEvent): Awaitable<void> use ($event)
-            {
-                $this->assertEquals($event, $passedEvent);
-            });
+            ->andReturnUsing(
+                async function (OrderPlacedEvent $passedEvent): Awaitable<void> use ($event) {
+                    $this->assertEquals($event, $passedEvent);
+                }
+            );
 
         $eventHandler2->shouldReceive('handleEvent')
             ->once()
-            ->andReturnUsing(async function (OrderPlacedEvent $passedEvent): Awaitable<void>
-            use ($event, &$step2Finished)
-            {
-                $this->assertEquals($event, $passedEvent);
-                // Reason to not finish executing immediately.
-                await \HH\Asio\usleep(1);
-                $step2Finished = true;
-            });
+            ->andReturnUsing(
+                async function (OrderPlacedEvent $passedEvent): Awaitable<void> use ($event, &$step2Finished) {
+                    $this->assertEquals($event, $passedEvent);
+                    // Reason to not finish executing immediately.
+                    await \HH\Asio\usleep(1);
+                    $step2Finished = true;
+                }
+            );
 
         $dispatcher->tasksForEvent(OrderPlacedEvent::class)
             ->setTask('first', $eventHandler1)

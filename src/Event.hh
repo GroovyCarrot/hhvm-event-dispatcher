@@ -17,7 +17,9 @@ abstract class Event
     public function stopPropagation(): void
     {
         if ($this->isStoppingPropagationUnsafe()) {
-            throw new StopPropagationUnsafeException('Stopping event propagation is unsafe as this event is not being propagated in a synchronous task.');
+            throw new StopPropagationUnsafeException(
+                'Stopping event propagation is unsafe as this event is not being propagated in a synchronous task.'
+            );
         }
 
         $this->propagationStopped = true;

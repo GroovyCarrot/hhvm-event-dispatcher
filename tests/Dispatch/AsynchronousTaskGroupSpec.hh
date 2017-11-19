@@ -29,15 +29,16 @@ class AsynchronousTaskGroupSpec extends TaskGroupSpec
         $listener = m::mock(EventHandling::class);
         $listener->shouldReceive('handleEvent')
             ->times(3)
-            ->andReturnUsing(async function (OrderPlacedEvent $passedEvent): Awaitable<void> use ($self, $event, &$step)
-            {
-                // Assert that the order passed is identical.
-                $self->assertEquals($event->order, $passedEvent->order);
-                // Assert that we cannot stop propagation for this event as it
-                // is propagating asynchronously.
-                $self->assertTrue($passedEvent->isStoppingPropagationUnsafe());
-                $step++;
-            });
+            ->andReturnUsing(
+                async function (OrderPlacedEvent $passedEvent): Awaitable<void> use ($self, $event, &$step) {
+                    // Assert that the order passed is identical.
+                    $self->assertEquals($event->order, $passedEvent->order);
+                    // Assert that we cannot stop propagation for this event as it
+                    // is propagating asynchronously.
+                    $self->assertTrue($passedEvent->isStoppingPropagationUnsafe());
+                    $step++;
+                }
+            );
 
         $group = AsynchronousTaskGroup::newGroup()
             ->addTask($listener)

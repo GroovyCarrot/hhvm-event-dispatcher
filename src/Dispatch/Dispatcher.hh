@@ -48,8 +48,7 @@ class Dispatcher implements EventDispatching, EventHandlerTaskCollecting
     private function getDispatchAwaitables<Tevent as Event>(
         Tevent $event,
         Map<string, Tevent> $taskEvents
-    ): Map<string, Awaitable<void>>
-    {
+    ): Map<string, Awaitable<void>> {
         $eventClass = get_class($event);
 
         $tasks = $this->tasksForEvent($eventClass)->getTasks();

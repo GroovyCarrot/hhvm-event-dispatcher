@@ -2,8 +2,13 @@
 
 namespace Test\GroovyCarrot\Event;
 
+use GroovyCarrot\Event\Event;
 use GroovyCarrot\Event\Exception\StopPropagationUnsafeException;
 use PHPUnit\Framework\TestCase;
+
+class EventStub extends Event
+{
+}
 
 class EventSpec extends TestCase
 {

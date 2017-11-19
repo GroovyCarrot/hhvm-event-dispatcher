@@ -10,6 +10,6 @@ class OrderPlacedEvent extends Event
 
     public function __construct(
         public Order $order,
-    )
-    {}
+    ) {
+    }
 }
